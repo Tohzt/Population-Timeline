@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
 	MapContainer,
 	TileLayer,
@@ -8,18 +8,18 @@ import {
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "./WorldMap.css";
+import {
+	getPopulationData,
+	getSettlementsForMap,
+	PopulationData,
+	PopulationSettlement,
+} from "../services/api";
+import SettlementMap from "./SettlementMap";
+import LoadingSpinner from "./LoadingSpinner";
 
 interface WorldMapProps {
 	highlightedRegions?: string[];
 	onRegionClick?: (regionId: string) => void;
-}
-
-interface PopulationData {
-	group: string;
-	population: number;
-	percentage: number;
-	region: string;
-	growth: number;
 }
 
 const AdvancedWorldMap: React.FC<WorldMapProps> = ({
@@ -32,6 +32,10 @@ const AdvancedWorldMap: React.FC<WorldMapProps> = ({
 	const [showGroups, setShowGroups] = useState(false);
 	const [isSearching, setIsSearching] = useState(false);
 	const [currentTimelineDate, setCurrentTimelineDate] = useState("1500");
+	const [populationData, setPopulationData] = useState<PopulationData[]>([]);
+	const [settlements, setSettlements] = useState<PopulationSettlement[]>([]);
+	const [isLoading, setIsLoading] = useState(false);
+	const [error, setError] = useState<string | null>(null);
 
 	// Comprehensive list of population groups (alphabetically ordered)
 	const populationGroups = [
@@ -178,6 +182,7 @@ const AdvancedWorldMap: React.FC<WorldMapProps> = ({
 			percentage: 0,
 			region: "Unknown",
 			growth: 0,
+			settlements: [],
 		}));
 	};
 
@@ -242,7 +247,41 @@ const AdvancedWorldMap: React.FC<WorldMapProps> = ({
 	const getStartYear = () => startYear;
 	const getEndYear = () => endYear;
 
-	const placeholderData = generatePlaceholderData();
+	// Fetch population data when search parameters change
+	useEffect(() => {
+		if (isSearching && selectedGroups.length > 0) {
+			const fetchData = async () => {
+				setIsLoading(true);
+				setError(null);
+				try {
+					const currentYear = parseInt(currentTimelineDate);
+					const [popData, settlementData] = await Promise.all([
+						getPopulationData(selectedGroups, startYear, endYear, currentYear),
+						getSettlementsForMap(
+							selectedGroups,
+							startYear,
+							endYear,
+							currentYear
+						),
+					]);
+					setPopulationData(popData);
+					setSettlements(settlementData);
+				} catch (err) {
+					setError("Failed to fetch population data. Please try again.");
+					console.error("Error fetching data:", err);
+				} finally {
+					setIsLoading(false);
+				}
+			};
+
+			fetchData();
+		}
+	}, [isSearching, selectedGroups, startYear, endYear, currentTimelineDate]);
+
+	const placeholderData =
+		isSearching && populationData.length > 0
+			? populationData
+			: generatePlaceholderData();
 
 	return (
 		<div className="world-map-container">
@@ -309,38 +348,30 @@ const AdvancedWorldMap: React.FC<WorldMapProps> = ({
 			</div>
 
 			{isSearching && (
-				<div className="timeline-panel">
-					<div className="timeline-controls">
-						<div className="timeline-info">
-							<strong>Current Year: {currentTimelineDate}</strong>
-						</div>
-						<div className="timeline-slider-container">
-							<input
-								type="range"
-								min={getStartYear()}
-								max={getEndYear()}
-								value={currentTimelineDate}
-								onChange={handleTimelineChange}
-								className="timeline-slider"
-							/>
-							<div className="timeline-labels">
-								<span>{getStartYear()}</span>
-								<span>{getEndYear()}</span>
-							</div>
-						</div>
-					</div>
-
+				<div className="timeline-data-panel">
 					<div className="results-table-container">
 						<h3>Population Data - Year {currentTimelineDate}</h3>
 						<div className="results-table-wrapper">
 							<table className="results-table">
 								<thead>
 									<tr>
-										<th>Population Group</th>
+										<th>
+											Population
+											<br />
+											Group
+										</th>
 										<th>Population</th>
-										<th>Percentage</th>
-										<th>Primary Region</th>
-										<th>Growth Rate (%)</th>
+										<th>%</th>
+										<th>
+											Primary
+											<br />
+											Region
+										</th>
+										<th>
+											Growth
+											<br />
+											Rate (%)
+										</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -356,7 +387,7 @@ const AdvancedWorldMap: React.FC<WorldMapProps> = ({
 												</div>
 											</td>
 											<td>{data.population.toLocaleString()}</td>
-											<td>{data.percentage}%</td>
+											<td>{data.percentage.toFixed(1)}%</td>
 											<td>{data.region}</td>
 											<td
 												className={data.growth >= 0 ? "positive" : "negative"}
@@ -371,29 +402,86 @@ const AdvancedWorldMap: React.FC<WorldMapProps> = ({
 						</div>
 					</div>
 
-					<div className="stop-button-container">
-						<button className="stop-button" onClick={handleStop}>
-							Stop Search
-						</button>
+					<div className="timeline-controls">
+						<div className="timeline-slider-container">
+							<input
+								type="range"
+								min={getStartYear()}
+								max={getEndYear()}
+								value={currentTimelineDate}
+								onChange={handleTimelineChange}
+								className="timeline-slider"
+							/>
+							<div className="timeline-labels">
+								<span>{getStartYear()}</span>
+								<span className="current-year-display">
+									{currentTimelineDate}
+								</span>
+								<span>{getEndYear()}</span>
+							</div>
+						</div>
 					</div>
 				</div>
 			)}
 
-			<div className="map-wrapper">
-				<MapContainer
-					center={[20, 0]}
-					zoom={2}
-					style={{ height: "500px", width: "100%" }}
-					className="world-map"
-					zoomControl={true}
-					scrollWheelZoom={true}
-				>
-					<TileLayer
-						url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-						attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-					/>
-				</MapContainer>
-			</div>
+			{isSearching && (
+				<div className="map-wrapper">
+					{isLoading ? (
+						<LoadingSpinner message="Fetching ancient population data..." />
+					) : error ? (
+						<div className="error-message">
+							<p>{error}</p>
+							<button onClick={() => setError(null)}>Try Again</button>
+						</div>
+					) : settlements.length > 0 ? (
+						<SettlementMap
+							settlements={settlements}
+							highlightedRegions={highlightedRegions}
+							onRegionClick={onRegionClick}
+						/>
+					) : (
+						<MapContainer
+							center={[20, 0]}
+							zoom={2}
+							style={{ height: "500px", width: "100%" }}
+							className="world-map"
+							zoomControl={true}
+							scrollWheelZoom={true}
+						>
+							<TileLayer
+								url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+								attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+							/>
+						</MapContainer>
+					)}
+				</div>
+			)}
+
+			{!isSearching && (
+				<div className="map-wrapper">
+					<MapContainer
+						center={[20, 0]}
+						zoom={2}
+						style={{ height: "500px", width: "100%" }}
+						className="world-map"
+						zoomControl={true}
+						scrollWheelZoom={true}
+					>
+						<TileLayer
+							url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+							attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+						/>
+					</MapContainer>
+				</div>
+			)}
+
+			{isSearching && (
+				<div className="stop-button-container">
+					<button className="stop-button" onClick={handleStop}>
+						Stop Search
+					</button>
+				</div>
+			)}
 
 			<div className="info-panel">
 				<h3>Population Timeline Search</h3>

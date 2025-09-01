@@ -39,7 +39,7 @@
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
-	min-width: 150px;
+	min-width: 120px;
 }
 
 .control-group label {
@@ -154,7 +154,7 @@
 
 .groups-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+	grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
 	gap: 10px;
 	max-height: 300px;
 	overflow-y: auto;
@@ -190,19 +190,21 @@
 	transform: translateY(-2px);
 }
 
-.timeline-panel {
+.timeline-data-panel {
 	background: rgba(255, 255, 255, 0.1);
 	border-radius: 15px;
 	padding: 25px;
 	backdrop-filter: blur(10px);
 	border: 1px solid rgba(255, 255, 255, 0.2);
 	margin-bottom: 20px;
-	max-width: 1000px;
+	max-width: 800px;
 	width: 100%;
+	margin-left: auto;
+	margin-right: auto;
 }
 
 .timeline-controls {
-	margin-bottom: 25px;
+	margin-top: 25px;
 }
 
 .timeline-info {
@@ -216,6 +218,8 @@
 .timeline-slider-container {
 	position: relative;
 	padding: 20px 0;
+	max-width: 800px;
+	margin: 0 auto;
 }
 
 .timeline-slider {
@@ -261,6 +265,21 @@
 	margin-top: 10px;
 	font-size: 12px;
 	color: rgba(255, 255, 255, 0.8);
+	position: relative;
+}
+
+.current-year-display {
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+	background: rgba(116, 192, 252, 0.9);
+	color: white;
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-weight: 600;
+	font-size: 11px;
+	white-space: nowrap;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .color-legend {
@@ -310,7 +329,9 @@
 }
 
 .results-table-container {
-	margin-top: 20px;
+	max-width: 800px;
+	margin-left: auto;
+	margin-right: auto;
 }
 
 .results-table-container h3 {
@@ -332,20 +353,22 @@
 	width: 100%;
 	border-collapse: collapse;
 	color: white;
-	font-size: 14px;
+	font-size: 12px;
 }
 
 .results-table th {
 	background: rgba(255, 255, 255, 0.1);
-	padding: 12px 15px;
-	text-align: left;
+	padding: 6px 6px;
+	text-align: center;
 	font-weight: 600;
 	border-bottom: 2px solid rgba(255, 255, 255, 0.2);
 	text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+	line-height: 1.2;
+	white-space: nowrap;
 }
 
 .results-table td {
-	padding: 12px 15px;
+	padding: 4px 6px;
 	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -366,14 +389,14 @@
 .group-cell {
 	display: flex;
 	align-items: center;
-	gap: 10px;
+	gap: 6px;
 }
 
 .group-color-indicator {
-	width: 16px;
-	height: 16px;
-	border-radius: 4px;
-	border: 2px solid rgba(255, 255, 255, 0.3);
+	width: 12px;
+	height: 12px;
+	border-radius: 3px;
+	border: 1px solid rgba(255, 255, 255, 0.3);
 	flex-shrink: 0;
 }
 
@@ -467,6 +490,92 @@
 	line-height: 1.5;
 }
 
+/* Error message styles */
+.error-message {
+	background: rgba(255, 107, 107, 0.1);
+	border: 1px solid rgba(255, 107, 107, 0.3);
+	border-radius: 10px;
+	padding: 20px;
+	text-align: center;
+	color: white;
+	margin: 20px 0;
+}
+
+.error-message p {
+	margin-bottom: 15px;
+	font-size: 16px;
+}
+
+.error-message button {
+	background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+	border: none;
+	color: white;
+	padding: 10px 20px;
+	border-radius: 6px;
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.3s ease;
+}
+
+.error-message button:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+/* Data display container for side-by-side layout - keeping for mobile */
+.data-display-container {
+	display: flex;
+	gap: 15px;
+	margin-bottom: 20px;
+	max-width: 1400px;
+	width: 100%;
+}
+
+.data-display-container .map-wrapper {
+	flex: 1;
+	min-width: 0;
+}
+
+.data-display-container .results-table-container {
+	flex: 1;
+	min-width: 0;
+	background: rgba(255, 255, 255, 0.1);
+	border-radius: 15px;
+	padding: 20px;
+	backdrop-filter: blur(10px);
+	border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Settlement map container */
+.settlement-map-container {
+	position: relative;
+	width: 100%;
+	height: 500px;
+}
+
+/* Settlement popup styles */
+.settlement-popup {
+	min-width: 200px;
+}
+
+.settlement-popup h3 {
+	margin: 0 0 10px 0;
+	color: #333;
+	font-size: 16px;
+	font-weight: 600;
+}
+
+.settlement-details p {
+	margin: 5px 0;
+	font-size: 12px;
+	color: #666;
+}
+
+.settlement-details strong {
+	color: #333;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
 	.world-map-container h2 {
@@ -513,5 +622,21 @@
 	.search-button,
 	.toggle-groups-button {
 		width: 100%;
+	}
+
+	/* Mobile layout for data display */
+	.data-display-container {
+		flex-direction: column;
+		gap: 15px;
+	}
+
+	.data-display-container .map-wrapper,
+	.data-display-container .results-table-container {
+		flex: none;
+		width: 100%;
+	}
+
+	.data-display-container .results-table-container {
+		padding: 15px;
 	}
 }

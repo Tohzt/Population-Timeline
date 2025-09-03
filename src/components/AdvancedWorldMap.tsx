@@ -237,6 +237,23 @@ const AdvancedWorldMap: React.FC<WorldMapProps> = ({
 		setCurrentTimelineDate(event.target.value);
 	};
 
+	// Calculate the position for the current year display based on slider value
+	const calculateCurrentYearPosition = () => {
+		const min = getStartYear();
+		const max = getEndYear();
+		const current = parseInt(currentTimelineDate);
+		const range = max - min;
+		const percentage = range > 0 ? (current - min) / range : 0.5;
+		// Invert the percentage so that sliding up moves the display up
+		const invertedPercentage = (1 - percentage) * 100;
+
+		// Constrain the position to avoid overlapping with start/end dates
+		// Keep it within 50px from top and bottom (roughly 15-85% of the timeline height)
+		const constrainedPercentage = Math.max(5, Math.min(95, invertedPercentage));
+
+		return constrainedPercentage;
+	};
+
 	const formatYearForDisplay = (year: number) => {
 		if (year < 0) {
 			return `${Math.abs(year)} BC`;
@@ -437,7 +454,6 @@ const AdvancedWorldMap: React.FC<WorldMapProps> = ({
 
 					<div className="vertical-timeline-container">
 						<div className="timeline-controls">
-							<div className="current-year-display">{currentTimelineDate}</div>
 							<div className="timeline-info">
 								<div className="timeline-slider-container">
 									<input
@@ -451,6 +467,15 @@ const AdvancedWorldMap: React.FC<WorldMapProps> = ({
 								</div>
 								<div className="timeline-labels vertical">
 									<span>{getEndYear()}</span>
+									<div
+										className="current-year-display"
+										style={{
+											top: `${calculateCurrentYearPosition()}%`,
+											transform: "translate(-50%, -50%)",
+										}}
+									>
+										{currentTimelineDate}
+									</div>
 									<span>{getStartYear()}</span>
 								</div>
 							</div>

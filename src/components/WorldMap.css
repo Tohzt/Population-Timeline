@@ -394,7 +394,8 @@
 	position: absolute;
 	left: 100%;
 	z-index: 10;
-	transition: top 0.1s ease;
+	/* Removed transition for instant response */
+	will-change: top;
 }
 
 /* Timeline slider container - separate from labels */

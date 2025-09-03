@@ -347,113 +347,115 @@ const AdvancedWorldMap: React.FC<WorldMapProps> = ({
 				)}
 			</div>
 
+			{/* Table on top */}
 			{isSearching && (
-				<div className="timeline-data-panel">
-					<div className="results-table-container">
-						<h3>Population Data - Year {currentTimelineDate}</h3>
-						<div className="results-table-wrapper">
-							<table className="results-table">
-								<thead>
-									<tr>
-										<th>
-											Population
-											<br />
-											Group
-										</th>
-										<th>Population</th>
-										<th>%</th>
-										<th>
-											Primary
-											<br />
-											Region
-										</th>
-										<th>
-											Growth
-											<br />
-											Rate (%)
-										</th>
+				<div className="results-table-container">
+					<h3>Population Data - Year {currentTimelineDate}</h3>
+					<div className="results-table-wrapper">
+						<table className="results-table">
+							<thead>
+								<tr>
+									<th>
+										Population
+										<br />
+										Group
+									</th>
+									<th>Population</th>
+									<th>%</th>
+									<th>
+										Primary
+										<br />
+										Region
+									</th>
+									<th>
+										Growth
+										<br />
+										Rate (%)
+									</th>
+								</tr>
+							</thead>
+							<tbody>
+								{placeholderData.map((data, index) => (
+									<tr key={index}>
+										<td>
+											<div className="group-cell">
+												<div
+													className="group-color-indicator"
+													style={{ backgroundColor: getGroupColor(index) }}
+												></div>
+												<span>{data.group}</span>
+											</div>
+										</td>
+										<td>{data.population.toLocaleString()}</td>
+										<td>{data.percentage.toFixed(1)}%</td>
+										<td>{data.region}</td>
+										<td className={data.growth >= 0 ? "positive" : "negative"}>
+											{data.growth >= 0 ? "+" : ""}
+											{data.growth}%
+										</td>
 									</tr>
-								</thead>
-								<tbody>
-									{placeholderData.map((data, index) => (
-										<tr key={index}>
-											<td>
-												<div className="group-cell">
-													<div
-														className="group-color-indicator"
-														style={{ backgroundColor: getGroupColor(index) }}
-													></div>
-													<span>{data.group}</span>
-												</div>
-											</td>
-											<td>{data.population.toLocaleString()}</td>
-											<td>{data.percentage.toFixed(1)}%</td>
-											<td>{data.region}</td>
-											<td
-												className={data.growth >= 0 ? "positive" : "negative"}
-											>
-												{data.growth >= 0 ? "+" : ""}
-												{data.growth}%
-											</td>
-										</tr>
-									))}
-								</tbody>
-							</table>
-						</div>
-					</div>
-
-					<div className="timeline-controls">
-						<div className="timeline-slider-container">
-							<input
-								type="range"
-								min={getStartYear()}
-								max={getEndYear()}
-								value={currentTimelineDate}
-								onChange={handleTimelineChange}
-								className="timeline-slider"
-							/>
-							<div className="timeline-labels">
-								<span>{getStartYear()}</span>
-								<span className="current-year-display">
-									{currentTimelineDate}
-								</span>
-								<span>{getEndYear()}</span>
-							</div>
-						</div>
+								))}
+							</tbody>
+						</table>
 					</div>
 				</div>
 			)}
 
+			{/* Map and Timeline below table */}
 			{isSearching && (
-				<div className="map-wrapper">
-					{isLoading ? (
-						<LoadingSpinner message="Fetching ancient population data..." />
-					) : error ? (
-						<div className="error-message">
-							<p>{error}</p>
-							<button onClick={() => setError(null)}>Try Again</button>
-						</div>
-					) : settlements.length > 0 ? (
-						<SettlementMap
-							settlements={settlements}
-							highlightedRegions={highlightedRegions}
-							onRegionClick={onRegionClick}
-						/>
-					) : (
-						<MapContainer
-							center={[20, 0]}
-							zoom={2}
-							style={{ height: "500px", width: "100%" }}
-							className="world-map"
-							zoomControl={true}
-							scrollWheelZoom={true}
-						>
-							<TileLayer
-								url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-								attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+				<div className="map-timeline-container">
+					<div className="map-wrapper">
+						{isLoading ? (
+							<LoadingSpinner message="Fetching ancient population data..." />
+						) : error ? (
+							<div className="error-message">
+								<p>{error}</p>
+								<button onClick={() => setError(null)}>Try Again</button>
+							</div>
+						) : settlements.length > 0 ? (
+							<SettlementMap
+								settlements={settlements}
+								highlightedRegions={highlightedRegions}
+								onRegionClick={onRegionClick}
 							/>
-						</MapContainer>
-					)}
+						) : (
+							<MapContainer
+								center={[20, 0]}
+								zoom={2}
+								style={{ height: "500px", width: "100%" }}
+								className="world-map"
+								zoomControl={true}
+								scrollWheelZoom={true}
+							>
+								<TileLayer
+									url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+									attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+								/>
+							</MapContainer>
+						)}
+					</div>
+
+					<div className="vertical-timeline-container">
+						<div className="timeline-controls">
+							<div className="current-year-display">{currentTimelineDate}</div>
+							<div className="timeline-info">
+								<div className="timeline-slider-container">
+									<input
+										type="range"
+										min={getStartYear()}
+										max={getEndYear()}
+										value={currentTimelineDate}
+										onChange={handleTimelineChange}
+										className="timeline-slider vertical"
+									/>
+								</div>
+								<div className="timeline-labels vertical">
+									<span>{getEndYear()}</span>
+									<span>{getStartYear()}</span>
+								</div>
+							</div>
+						</div>
+					</div>
 				</div>
 			)}
 
